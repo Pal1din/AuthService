@@ -1,4 +1,8 @@
+using AuthService;
+using Duende.IdentityModel;
+using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,23 +15,56 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddEntityFrameworkStores<AuthDbContext>()
     .AddDefaultTokenProviders();
+// builder.Services.AddTransient<IProfileService, CustomProfileService>();
 
 // Настроим IdentityServer как SSO
-builder.Services.AddIdentityServer()
-    .AddInMemoryClients(new List<Client>
+ApiResource[] resources =
+[
+    new ApiResource("full.access")
     {
-        new Client
+        UserClaims =
         {
-            ClientId = "vehicle-service",
-            AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-            ClientSecrets = { new Secret("secret".Sha256()) },
-            AllowedScopes = { "logs.read" }
-        }
-    })
-    .AddInMemoryApiScopes(new List<ApiScope>
+            "full.access"
+        },
+        Scopes = new List<string>
+        {
+            "full.access"
+        },
+    }
+];
+
+ApiScope[] scopes =
+[
+    new ApiScope("full.access", "Full access"),
+    new ApiScope(IdentityServerConstants.StandardScopes.OpenId, "Open ID Client"),
+    new ApiScope(IdentityServerConstants.StandardScopes.Profile, "Profile Client"),
+];
+
+Client[] clients =
+[
+    new Client
     {
-        new ApiScope("logs.read", "Read logs")
-    })
+        ClientId = "vehicle-service",
+        AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+        ClientSecrets = { new Secret("secret".Sha256()) },
+        AllowAccessTokensViaBrowser = true,
+        AlwaysSendClientClaims = true,
+        AlwaysIncludeUserClaimsInIdToken = true,
+        AccessTokenType = AccessTokenType.Jwt,
+        AllowedScopes =
+        {
+            IdentityServerConstants.StandardScopes.OpenId,
+            IdentityServerConstants.StandardScopes.Profile,
+            "full.access"
+        },
+        RequireConsent = false
+    }
+];
+
+builder.Services.AddIdentityServer()
+    .AddInMemoryClients(clients)
+    .AddInMemoryApiResources(resources)
+    .AddInMemoryApiScopes(scopes)
     .AddAspNetIdentity<ApplicationUser>();
 
 builder.Services.AddAuthorization();
@@ -35,7 +72,7 @@ builder.Services.AddAuthentication()
     .AddJwtBearer("Bearer", options =>
     {
         options.Authority = "http://auth-service";
-        options.Audience = "logs.read";
+        options.Audience = "full.access";
         options.RequireHttpsMetadata = false;
     });
 
