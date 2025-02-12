@@ -1,3 +1,4 @@
+using AuthService.Entities;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Identity;
