@@ -4,13 +4,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddAuthDbContext()
     .AddIdentityServer()
-    .MigrateDb();
+    .MigrateDb()
+    .ConfigureServices();
 
 
 var app = builder.Build();
-
-app.UseIdentityServer()
-    .UseAuthorization();
 
 app.AddEndpoints();
 

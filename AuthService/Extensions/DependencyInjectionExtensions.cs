@@ -26,6 +26,13 @@ internal static class DependencyInjectionExtensions
         dbContext.Database.Migrate();
         return builder;
     }
+    
+    internal static WebApplicationBuilder ConfigureServices(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddMvc();
+        builder.Services.AddRazorPages();
+        return builder;
+    }
 
     
     internal static WebApplicationBuilder AddIdentityServer(this WebApplicationBuilder builder)
@@ -87,6 +94,9 @@ internal static class DependencyInjectionExtensions
             }
         ];
 
+        // builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
+        //     .AddEntityFrameworkStores<AuthDbContext>()
+        //     .AddDefaultTokenProviders();
         builder.Services.AddIdentityServer()
             .AddInMemoryClients(clients)
             .AddInMemoryApiResources(resources)
@@ -101,6 +111,7 @@ internal static class DependencyInjectionExtensions
                 options.Audience = "full.access";
                 options.RequireHttpsMetadata = false;
             });
+        builder.Services.AddControllersWithViews();
         return builder;
     }
 }

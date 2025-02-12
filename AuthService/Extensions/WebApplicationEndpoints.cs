@@ -9,8 +9,25 @@ internal static class WebApplicationEndpoints
 {
     internal static WebApplication AddEndpoints(this WebApplication app)
     {
+        DefaultEndpoints(app);
         AddRegisterEndpoint(app);
         return app;
+    }
+
+    private static void DefaultEndpoints(this WebApplication app)
+    {
+        app.UseRouting();
+        app.UseStaticFiles();
+        app.UseIdentityServer();
+        app.UseAuthorization();
+
+        // app.UseEndpoints(endpoints => endpoints.MapDefaultControllerRoute());
+        app.MapDefaultControllerRoute();
+        app.MapRazorPages()
+            .RequireAuthorization();
+        // app.MapControllerRoute(name: "default",
+        //     pattern: "{controller=Home}/{action=Index}/{id?}");
+
     }
 
     private static void AddRegisterEndpoint(WebApplication app)
