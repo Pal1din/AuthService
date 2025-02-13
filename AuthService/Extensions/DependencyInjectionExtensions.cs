@@ -1,3 +1,4 @@
+using AuthService.AccessServices;
 using AuthService.Entities;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
@@ -54,21 +55,13 @@ internal static class DependencyInjectionExtensions
                     IdentityServerConstants.StandardScopes.OpenId,
                 }
             },
-            new ApiResource("vehicle.resource")
-            {
-                UserClaims =
-                    { },
-                Scopes = new List<string>
-                {
-                    "vehicle.scope"
-                },
-            }
+            VehicleServiceAccess.Resource
         ];
 
 //Создаем все scope сервера
         ApiScope[] scopes =
         [
-            new ApiScope("vehicle.scope", "vehicle scope"),
+            new ApiScope("read", "read scope"),
             new ApiScope(IdentityServerConstants.StandardScopes.OpenId, "Open ID Client"),
             new ApiScope(IdentityServerConstants.StandardScopes.Profile, "Profile Client"),
         ];
@@ -76,27 +69,9 @@ internal static class DependencyInjectionExtensions
 //Создаем клиентов которые будут обращаться к identityServer
         Client[] clients =
         [
-            new Client
-            {
-                ClientId = "vehicle-service",
-                AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                ClientSecrets = { new Secret("secret".Sha256()) },
-                AllowAccessTokensViaBrowser = true,
-                AlwaysSendClientClaims = true,
-                AlwaysIncludeUserClaimsInIdToken = true,
-                AccessTokenType = AccessTokenType.Jwt,
-                AllowedScopes =
-                {
-                    "vehicle.scope",
-                    IdentityServerConstants.StandardScopes.OpenId,
-                },
-                RequireConsent = false
-            }
+            VehicleServiceAccess.Client
         ];
-
-        // builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
-        //     .AddEntityFrameworkStores<AuthDbContext>()
-        //     .AddDefaultTokenProviders();
+        
         builder.Services.AddIdentityServer()
             .AddInMemoryClients(clients)
             .AddInMemoryApiResources(resources)
