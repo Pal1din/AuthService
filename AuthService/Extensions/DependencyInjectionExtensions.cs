@@ -36,42 +36,43 @@ internal static class DependencyInjectionExtensions
     }
 
     
-    internal static WebApplicationBuilder AddIdentityServer(this WebApplicationBuilder builder)
+    internal static WebApplicationBuilder AddIdentityServer(this WebApplicationBuilder builder, IdentityServerSettings settings)
     {
         // Настроим ресурсы (какие поля будет содержать jwt токен при определенном scope)
-        ApiResource[] resources =
-        [
-            //{name} в конструкторе отвечает за поле aud в jwt токене
-            new ApiResource(IdentityServerConstants.StandardScopes.OpenId)
-            {
-                UserClaims =
-                {
-                    IdentityServerConstants.StandardScopes.Email,
-                    IdentityServerConstants.StandardScopes.Phone,
-                    IdentityServerConstants.StandardScopes.Profile,
-                },
-                Scopes =
-                {
-                    IdentityServerConstants.StandardScopes.OpenId,
-                }
-            },
-            VehicleServiceAccess.Resource
-        ];
+        var resources = settings.Resources.Select(x => new ApiResource(x.Name, x.DisplayName)
+        {
+            Scopes = x.Scopes,
+            UserClaims = x.Claims
+        });
 
 //Создаем все scope сервера
-        ApiScope[] scopes =
-        [
-            new ApiScope("read", "Доступ на чтение"),
-            new ApiScope("write", "Доступ на запись"),
-            new ApiScope(IdentityServerConstants.StandardScopes.OpenId, "Open ID Client"),
-            new ApiScope(IdentityServerConstants.StandardScopes.Profile, "Profile Client"),
-        ];
+        var scopes = settings.Scopes.Select(x =>
+        {
+            if (x is { Name: not null, DisplayName: not null })
+                return new ApiScope(x.Name, x.DisplayName);
+            if (x.Name is not null && x.DisplayName is null)
+                return new ApiScope(x.Name);
+            return new ApiScope();
+        });
 
 //Создаем клиентов которые будут обращаться к identityServer
-        Client[] clients =
-        [
-            VehicleServiceAccess.Client
-        ];
+        var clients = settings.Clients.Select(x => new Client
+        {
+            ClientId = x.ClientId,
+            AllowedGrantTypes = x.AllowedGrantTypes,
+            ClientSecrets = { new Secret(x.ClientSecret.Sha256()) },
+            AllowAccessTokensViaBrowser = x.AllowAccessTokensViaBrowser,
+            AlwaysSendClientClaims = x.AlwaysSendClientClaims,
+            AlwaysIncludeUserClaimsInIdToken = x.AlwaysIncludeUserClaimsInIdToken,
+            AccessTokenType = x.AccessTokenType,
+            RedirectUris = x.RedirectUris,
+            PostLogoutRedirectUris = x.PostLogoutRedirectUris,
+            AllowedScopes = x.AllowedScopes,
+            RequireConsent = x.RequireConsent,
+            AllowedCorsOrigins = x.AllowedCorsOrigins,
+            RequirePkce = x.RequirePkce,
+            RequireClientSecret = x.RequireClientSecret,
+        });
         
         builder.Services.AddIdentityServer()
             .AddInMemoryClients(clients)

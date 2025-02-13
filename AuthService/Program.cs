@@ -1,9 +1,10 @@
+using AuthService.AccessServices;
 using AuthService.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-
+var identityServerSettings = builder.Configuration.GetSection("IdentityServer").Get<IdentityServerSettings>();
 builder.AddAuthDbContext()
-    .AddIdentityServer()
+    .AddIdentityServer(identityServerSettings!)
     .MigrateDb()
     .ConfigureServices();
 
