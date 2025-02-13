@@ -7,7 +7,7 @@ internal static class VehicleServiceAccess
 {
     internal static ApiResource Resource = new ApiResource("vehicle.resource")
     {
-        UserClaims = { },
+        UserClaims = { "role", "permission" },
         Scopes = new List<string>
         {
             "read",

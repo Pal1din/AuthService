@@ -77,7 +77,8 @@ internal static class DependencyInjectionExtensions
             .AddInMemoryClients(clients)
             .AddInMemoryApiResources(resources)
             .AddInMemoryApiScopes(scopes)
-            .AddAspNetIdentity<ApplicationUser>();
+            .AddAspNetIdentity<ApplicationUser>()
+            .AddProfileService<ProfileService>();
 
         builder.Services.AddAuthorization();
         builder.Services.AddAuthentication()
