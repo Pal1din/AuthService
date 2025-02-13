@@ -61,7 +61,8 @@ internal static class DependencyInjectionExtensions
 //Создаем все scope сервера
         ApiScope[] scopes =
         [
-            new ApiScope("read", "read scope"),
+            new ApiScope("read", "Доступ на чтение"),
+            new ApiScope("write", "Доступ на запись"),
             new ApiScope(IdentityServerConstants.StandardScopes.OpenId, "Open ID Client"),
             new ApiScope(IdentityServerConstants.StandardScopes.Profile, "Profile Client"),
         ];

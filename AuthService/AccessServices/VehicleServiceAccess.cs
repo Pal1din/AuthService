@@ -10,11 +10,12 @@ internal static class VehicleServiceAccess
         UserClaims = { },
         Scopes = new List<string>
         {
-            "read"
+            "read",
+            "write"
         },
     };
 
-    internal static Client Client = new Client
+    internal static readonly Client Client = new Client
     {
         ClientId = "vehicle-service",
         AllowedGrantTypes = GrantTypes.Code,
@@ -28,6 +29,7 @@ internal static class VehicleServiceAccess
         AllowedScopes =
         {
             "read",
+            "write",
             IdentityServerConstants.StandardScopes.OpenId,
         },
         RequireConsent = false,
