@@ -16,6 +16,7 @@ internal static class WebApplicationEndpoints
 
     private static void DefaultEndpoints(this WebApplication app)
     {
+        app.UseCors("AllowLocalhost5173");
         app.UseRouting();
         app.UseStaticFiles();
         app.UseIdentityServer();

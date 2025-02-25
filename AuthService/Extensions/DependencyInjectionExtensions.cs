@@ -90,6 +90,15 @@ internal static class DependencyInjectionExtensions
                 options.RequireHttpsMetadata = false;
             });
         builder.Services.AddControllersWithViews();
+        // builder.Services.AddCors(options =>
+        // {
+        //     options.AddPolicy("AllowLocalhost5173", policy =>
+        //     {
+        //         policy.WithOrigins("")
+        //             .AllowAnyHeader()
+        //             .AllowAnyMethod();
+        //     });
+        // });
         return builder;
     }
 }
