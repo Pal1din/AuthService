@@ -36,6 +36,11 @@ public class ProfileService(UserManager<ApplicationUser> userManager, RoleManage
         }
 
         context.IssuedClaims.AddRange(claims);
+        
+        if(user.OrganizationId.HasValue)
+        {
+            context.IssuedClaims.Add(new Claim("organization_id", user.OrganizationId.ToString()));
+        }
     }
 
     public Task IsActiveAsync(IsActiveContext context)
