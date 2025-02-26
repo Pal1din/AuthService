@@ -1,17 +1,19 @@
 using Duende.IdentityServer.Models;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthService.Entities;
 
 public class AuthDbContext(DbContextOptions<AuthDbContext> options)
-    : IdentityDbContext<ApplicationUser, ApplicationRole, long>(options)
+    : IdentityDbContext<ApplicationUser, ApplicationRole, long>(options), IDataProtectionKeyContext
 {
     public DbSet<Organization> Organizations { get; set; }
     public DbSet<OrganizationRole> OrganizationRoles { get; set; }
     public DbSet<OrganizationUserRole> OrganizationUserRoles { get; set; }
     public DbSet<OrganizationClaim> OrganizationClaims { get; set; }
     public DbSet<OrganizationUserClaim> OrganizationUserClaims { get; set; }
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
     
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -63,5 +65,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options)
             .HasOne(ouc => ouc.User)
             .WithMany()
             .HasForeignKey(ouc => ouc.UserId);
+        
+        builder.Entity<DataProtectionKey>().ToTable("DataProtectionKeys");
     }
 }

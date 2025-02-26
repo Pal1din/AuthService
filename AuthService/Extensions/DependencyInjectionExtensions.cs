@@ -1,9 +1,9 @@
-using AuthService.AccessServices;
+using System.Security.Cryptography;
 using AuthService.Entities;
-using Duende.IdentityServer;
-using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AuthService.Extensions;
 
@@ -36,50 +36,39 @@ internal static class DependencyInjectionExtensions
     }
 
     
-    internal static WebApplicationBuilder AddIdentityServer(this WebApplicationBuilder builder, IdentityServerSettings settings)
+    internal static WebApplicationBuilder AddIdentityServer(this WebApplicationBuilder builder)
     {
-        // Настроим ресурсы (какие поля будет содержать jwt токен при определенном scope)
-        var resources = settings.Resources.Select(x => new ApiResource(x.Name, x.DisplayName)
-        {
-            Scopes = x.Scopes,
-            UserClaims = x.Claims
-        });
+        builder.Services.AddDataProtection()
+            .PersistKeysToDbContext<AuthDbContext>()
+            .SetApplicationName("IdentityServer")
+            .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
-//Создаем все scope сервера
-        var scopes = settings.Scopes.Select(x =>
-        {
-            if (x is { Name: not null, DisplayName: not null })
-                return new ApiScope(x.Name, x.DisplayName);
-            if (x.Name is not null && x.DisplayName is null)
-                return new ApiScope(x.Name);
-            return new ApiScope();
-        });
-
-//Создаем клиентов которые будут обращаться к identityServer
-        var clients = settings.Clients.Select(x => new Client
-        {
-            ClientId = x.ClientId,
-            AllowedGrantTypes = x.AllowedGrantTypes,
-            ClientSecrets = { new Secret(x.ClientSecret.Sha256()) },
-            AllowAccessTokensViaBrowser = x.AllowAccessTokensViaBrowser,
-            AlwaysSendClientClaims = x.AlwaysSendClientClaims,
-            AlwaysIncludeUserClaimsInIdToken = x.AlwaysIncludeUserClaimsInIdToken,
-            AccessTokenType = x.AccessTokenType,
-            RedirectUris = x.RedirectUris,
-            PostLogoutRedirectUris = x.PostLogoutRedirectUris,
-            AllowedScopes = x.AllowedScopes,
-            RequireConsent = x.RequireConsent,
-            AllowedCorsOrigins = x.AllowedCorsOrigins,
-            RequirePkce = x.RequirePkce,
-            RequireClientSecret = x.RequireClientSecret,
-        });
-        
-        builder.Services.AddIdentityServer()
-            .AddInMemoryClients(clients)
-            .AddInMemoryApiResources(resources)
-            .AddInMemoryApiScopes(scopes)
+        builder.Services.AddIdentityServer(options =>
+            {
+                
+            })
+            .AddConfigurationStore(options =>
+            {
+                options.ConfigureDbContext = db => 
+                    db.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
+                    {
+                        sqlOptions.MigrationsAssembly(typeof(AuthDbContext).Assembly.FullName);
+                    });
+            })
+            .AddOperationalStore(op =>
+            {
+                op.ConfigureDbContext = db => db.UseNpgsql(
+                    builder.Configuration.GetConnectionString("DefaultConnection"),
+                    npgsqlOptions => npgsqlOptions.MigrationsAssembly(typeof(Program).Assembly.FullName));
+                // Автоматическая очистка устаревших токенов (каждый час)
+                op.EnableTokenCleanup = true;
+                op.TokenCleanupInterval = 3600;
+            })
             .AddAspNetIdentity<ApplicationUser>()
-            .AddProfileService<ProfileService>();
+            .AddProfileService<ProfileService>()
+            .AddKeyManagement()
+            .AddSigningCredential(new SigningCredentials(
+                new RsaSecurityKey(RSA.Create(2048)), SecurityAlgorithms.RsaSha256));
 
         builder.Services.AddAuthorization();
         builder.Services.AddAuthentication()
@@ -87,18 +76,17 @@ internal static class DependencyInjectionExtensions
             {
                 options.Authority = "http://auth-service";
                 options.Audience = "full.access";
-                options.RequireHttpsMetadata = false;
+                options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
             });
+        
+        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders =
+                Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+                Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+        });
+        
         builder.Services.AddControllersWithViews();
-        // builder.Services.AddCors(options =>
-        // {
-        //     options.AddPolicy("AllowLocalhost5173", policy =>
-        //     {
-        //         policy.WithOrigins("")
-        //             .AllowAnyHeader()
-        //             .AllowAnyMethod();
-        //     });
-        // });
         return builder;
     }
 }

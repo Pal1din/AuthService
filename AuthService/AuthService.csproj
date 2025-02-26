@@ -11,8 +11,10 @@
     <ItemGroup>
       <PackageReference Include="Duende.IdentityServer" Version="7.1.0" />
       <PackageReference Include="Duende.IdentityServer.AspNetIdentity" Version="7.1.0" />
+      <PackageReference Include="Duende.IdentityServer.EntityFramework" Version="7.1.0" />
       <PackageReference Include="IdentityModel" Version="7.0.0" />
       <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.13" />
+      <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.13" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.13" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.2">
@@ -24,6 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="AccessServices\" />
       <Folder Include="Migrations\" />
     </ItemGroup>
 
@@ -31,6 +34,7 @@
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+      <Content Remove="keys\is-signing-key-CD7DAAA16782921BC8179B12D6F96421.json" />
     </ItemGroup>
 
 </Project>

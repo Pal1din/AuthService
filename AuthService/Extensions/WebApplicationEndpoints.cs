@@ -10,15 +10,15 @@ internal static class WebApplicationEndpoints
     internal static WebApplication AddEndpoints(this WebApplication app)
     {
         DefaultEndpoints(app);
-        AddRegisterEndpoint(app);
+        // AddRegisterEndpoint(app);
         return app;
     }
 
     private static void DefaultEndpoints(this WebApplication app)
     {
-        app.UseCors("AllowLocalhost5173");
-        app.UseRouting();
+        // app.UseCors("AllowLocalhost5173");
         app.UseStaticFiles();
+        app.UseRouting();
         app.UseIdentityServer();
         app.UseAuthorization();
 
