@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using AuthService.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -38,18 +39,24 @@ internal static class DependencyInjectionExtensions
     
     internal static WebApplicationBuilder AddIdentityServer(this WebApplicationBuilder builder)
     {
+        var rootPath = builder.Environment.ContentRootPath;
+        var path = Path.Combine(rootPath, "is.pfx");
+        X509Certificate2? cert = null;
+        if (File.Exists(path))
+            cert = new X509Certificate2(path, "123");
+        
         builder.Services.AddDataProtection()
             .PersistKeysToDbContext<AuthDbContext>()
             .SetApplicationName("IdentityServer")
             .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
-        builder.Services.AddIdentityServer(options =>
+        var identityServerBuilder = builder.Services.AddIdentityServer(options =>
             {
-                
+
             })
             .AddConfigurationStore(options =>
             {
-                options.ConfigureDbContext = db => 
+                options.ConfigureDbContext = db =>
                     db.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
                     {
                         sqlOptions.MigrationsAssembly(typeof(AuthDbContext).Assembly.FullName);
@@ -67,9 +74,12 @@ internal static class DependencyInjectionExtensions
             .AddAspNetIdentity<ApplicationUser>()
             .AddProfileService<ProfileService>()
             .AddKeyManagement()
+#if DEBUG
             .AddSigningCredential(new SigningCredentials(
                 new RsaSecurityKey(RSA.Create(2048)), SecurityAlgorithms.RsaSha256));
-
+#elif RELEASE
+            .AddSigningCredential(cert);
+#endif
         builder.Services.AddAuthorization();
         builder.Services.AddAuthentication()
             .AddJwtBearer("Bearer", options =>
