@@ -2,7 +2,7 @@
 // See LICENSE in the project root for license information.
 
 
-namespace IdentityServerHost.Pages.Logout;
+namespace AuthService.Pages.Account.Logout;
 
 public static class LogoutOptions
 {

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using System.Text;
 using System.Text.Json;
 
-namespace IdentityServerHost.Pages.Diagnostics;
+namespace AuthService.Pages.Diagnostics;
 
 public class ViewModel
 {
@@ -24,7 +24,7 @@ public class ViewModel
                 return;
             }
         }
-        Clients = Enumerable.Empty<string>();
+        Clients = [];
     }
 
     public AuthenticateResult AuthenticateResult { get; }

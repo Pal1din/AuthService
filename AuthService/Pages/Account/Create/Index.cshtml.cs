@@ -2,7 +2,6 @@
 // See LICENSE in the project root for license information.
 
 using AuthService.Entities;
-using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace IdentityServerHost.Pages.Create;
+namespace AuthService.Pages.Account.Create;
 
 [SecurityHeaders]
 [AllowAnonymous]

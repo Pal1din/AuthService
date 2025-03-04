@@ -1,8 +1,6 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
-using IdentityServerHost.Pages;
-using IdentityServerHost.Pages.Diagnostics;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,9 +16,16 @@ public class Index : PageModel
 
     public async Task<IActionResult> OnGet()
     {
-        //Replace with an authorization policy check
-        if (HttpContext.Connection.IsRemote())
-            return NotFound();
+        var localAddresses = new List<string?> { "127.0.0.1", "::1" };
+        if (HttpContext.Connection.LocalIpAddress != null)
+        {
+            localAddresses.Add(HttpContext.Connection.LocalIpAddress.ToString());
+        }
+
+        // if (!localAddresses.Contains(HttpContext.Connection.RemoteIpAddress?.ToString()))
+        // {
+        //     return NotFound();
+        // }
 
         View = new ViewModel(await HttpContext.AuthenticateAsync());
             
